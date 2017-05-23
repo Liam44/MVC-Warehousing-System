@@ -40,6 +40,19 @@ namespace MVCWarehousingSystem.Repositories
             return Items.SingleOrDefault(i => i.ArticleNumber == articleNumber);
         }
 
+        public IEnumerable<StockItem> ItemsByName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return new List<StockItem>();
+            else
+                return Items.Where(i => i.Name.ToLower().Contains(name.ToLower()));
+        }
+
+        public IEnumerable<StockItem> ItemsByPrice(double? price)
+        {
+            return Items.Where(i => i.Price == price);
+        }
+
         public void SaveChanges()
         {
             db.SaveChanges();

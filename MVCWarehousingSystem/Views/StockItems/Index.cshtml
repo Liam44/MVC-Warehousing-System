@@ -9,6 +9,10 @@
 <p>
     @Html.ActionLink("Create New", "Create")
 </p>
+<form id="frmsearch" action="~/StockItems/Search" method="get">
+    <input name="searchedValue" type="text" placeholder="Search Articles by Name or by Price" value="" style="width:275px;" />
+    <input name="submit-button" type="submit" style="font-weight:bold;" value="Search" />
+</form>
 <table class="table">
     <tr>
         <th>
