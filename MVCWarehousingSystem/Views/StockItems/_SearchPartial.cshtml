@@ -1,0 +1,54 @@
+﻿@model MVCWarehousingSystem.ViewModels.StockItems.SearchItemsVM
+
+<table class="table">
+    <tr>
+        <th>
+            @{string htmlName = @Html.DisplayNameFor(model => model.Result.First().Name).ToHtmlString();}
+            @Html.ActionLink(htmlName, "Search", new { searchedValue = Model.Value, sortOrder = ViewBag.NameSortParam })
+        </th>
+        <th>
+            @{htmlName = @Html.DisplayNameFor(model => model.Result.First().Price).ToHtmlString();}
+            @Html.ActionLink(htmlName, "Search", new { searchedValue = Model.Value, sortOrder = ViewBag.PriceSortParam })
+        </th>
+        <th>
+            @{htmlName = @Html.DisplayNameFor(model => model.Result.First().ShelfPosition).ToHtmlString();}
+            @Html.ActionLink(htmlName, "Search", new { searchedValue = Model.Value, sortOrder = ViewBag.LocationSortParam })
+        </th>
+        <th>
+            @{htmlName = @Html.DisplayNameFor(model => model.Result.First().Quantity).ToHtmlString();}
+            @Html.ActionLink(htmlName, "Search", new { searchedValue = Model.Value, sortOrder = ViewBag.QuantitySortParam })
+        </th>
+        <th>
+            @{htmlName = @Html.DisplayNameFor(model => model.Result.First().Description).ToHtmlString();}
+            @Html.ActionLink(htmlName, "Search", new { searchedValue = Model.Value, sortOrder = ViewBag.DescriptionSortParam })
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model.Result)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ShelfPosition)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Quantity)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.ArticleNumber }) |
+                @Html.ActionLink("Details", "Details", new { id = item.ArticleNumber }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.ArticleNumber })
+            </td>
+        </tr>
+    }
+
+</table>

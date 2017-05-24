@@ -8,39 +8,97 @@ using System.Web;
 
 namespace MVCWarehousingSystem.Repositories
 {
-    public class StockItemRepository : IDisposable
+    public class StockItemRepository
     {
-        StoreContext db = new StoreContext();
+        private static StoreContext db = new StoreContext();
+        private static List<StockItem> itemsToBeAdded = null;
+        private static List<StockItem> itemsToBeDeleted = null;
 
-        public List<StockItem> Items
+        public static List<StockItem> Items
         {
             get { return db.Items.ToList(); }
             private set { }
         }
 
-        public void AddItem(StockItem item)
+        public static List<StockItem> StoredItems
+        {
+            get
+            {
+                List<StockItem> copy = itemsToBeAdded.ToList();
+                itemsToBeAdded = null;
+                return copy;
+            }
+            private set { }
+        }
+
+        public static List<StockItem> DeletedItems
+        {
+            get
+            {
+                List<StockItem> copy = itemsToBeDeleted.ToList();
+                itemsToBeDeleted = null;
+                return copy;
+            }
+            private set { }
+        }
+
+        public static void AddItem(StockItem item)
         {
             db.Items.Add(item);
             SaveChanges();
         }
 
-        public void DeleteItem(StockItem item)
+        public static void StoreItemToBeCreated(StockItem item)
+        {
+            if (itemsToBeAdded == null)
+                itemsToBeAdded = new List<StockItem>();
+
+            itemsToBeAdded.Add(item);
+        }
+
+        public static void ValidateMultipleCreation()
+        {
+            foreach (StockItem item in itemsToBeAdded)
+                db.Items.Add(item);
+
+            if (itemsToBeAdded.Count > 0)
+                SaveChanges();
+        }
+
+        public static void DeleteItem(StockItem item)
         {
             if (db.Items.Remove(item) != null)
                 SaveChanges();
         }
 
-        public DbEntityEntry<StockItem> Item(StockItem item)
+        public static void StoreItemToBeDeleted(StockItem item)
+        {
+            if (itemsToBeDeleted == null)
+                itemsToBeDeleted = new List<StockItem>();
+
+            itemsToBeDeleted.Add(item);
+        }
+
+        public static void ValidateMultipleDelation()
+        {
+            foreach (StockItem item in itemsToBeDeleted)
+                db.Items.Remove(item);
+
+            if (itemsToBeDeleted.Count > 0)
+                SaveChanges();
+        }
+
+        public static DbEntityEntry<StockItem> Item(StockItem item)
         {
             return db.Entry(item);
         }
 
-        public StockItem ItemByArticleNumber(int? articleNumber)
+        public static StockItem ItemByArticleNumber(int? articleNumber)
         {
             return Items.SingleOrDefault(i => i.ArticleNumber == articleNumber);
         }
 
-        public IEnumerable<StockItem> ItemsByName(string name)
+        public static IEnumerable<StockItem> ItemsByName(string name)
         {
             if (string.IsNullOrEmpty(name))
                 return new List<StockItem>();
@@ -48,28 +106,14 @@ namespace MVCWarehousingSystem.Repositories
                 return Items.Where(i => i.Name.ToLower().Contains(name.ToLower()));
         }
 
-        public IEnumerable<StockItem> ItemsByPrice(double? price)
+        public static IEnumerable<StockItem> ItemsByPrice(double? price)
         {
             return Items.Where(i => i.Price == price);
         }
 
-        public void SaveChanges()
+        public static void SaveChanges()
         {
             db.SaveChanges();
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
         }
     }
 }
