@@ -4,7 +4,7 @@
     ViewBag.Title = "Delete Multiple Articles";
 }
 
-<h2>Delete Multiple Articles</h2>
+<h2>The following articles have been deleted</h2>
 
 <table class="table">
     <tr>
@@ -22,9 +22,6 @@
         </th>
         <th>
             @Html.DisplayNameFor(model => model.ItemsToBeDeleted.Keys.First().Description)
-        </th>
-        <th>
-            @Html.DisplayName("To be deleted?")
         </th>
     </tr>
 
@@ -46,13 +43,9 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Description)
             </td>
-            <td>
-                @Html.CheckBoxFor(modelItem => Model.ItemsToBeDeleted[item])
-            </td>
         </tr>
     }
 
 </table>
 
-@Html.ActionLink("Delete the selected articles", "DeleteMultipleConfirmed", new { model = Model }) |
 @Html.Partial("_BackToListPartial")

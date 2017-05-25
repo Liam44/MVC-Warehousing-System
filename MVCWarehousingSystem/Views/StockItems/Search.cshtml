@@ -2,10 +2,13 @@
 
 @{
     string searchType = string.Empty;
+    string searchedValue = Model.Value;
+
     switch (Model.ViewType)
     {
         case MVCWarehousingSystem.ViewModels.StockItems.eViewType.SearchByName:
             searchType = "Name";
+            searchedValue = string.Format("contains '{0}'", searchedValue);
             break;
         case MVCWarehousingSystem.ViewModels.StockItems.eViewType.SearchByPrice:
             searchType = "Price";
@@ -14,14 +17,10 @@
             searchType = "Article number";
             break;
     }
-    ViewBag.Title = "Articles by " + searchType + " (" + Model.Value + ")";
+    ViewBag.Title = "Articles by " + searchType + " (" + searchedValue + ")";
 }
 
 <h2>@ViewBag.Title</h2>
-
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
 
 @Html.Partial("_SearchPartial")
 

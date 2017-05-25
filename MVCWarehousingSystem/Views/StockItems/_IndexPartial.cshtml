@@ -1,0 +1,60 @@
+﻿@model IEnumerable<MVCWarehousingSystem.Models.StockItem>
+
+<table class="table">
+    <tr>
+        @*<th>
+                @{string htmlName = @Html.DisplayNameFor(model => model.Name).ToHtmlString();}
+                @Html.ActionLink(htmlName, "Index", new { sortOrder = ViewBag.NameSortParam })
+            </th>*@
+        @*<th>
+                @{htmlName = @Html.DisplayNameFor(model => model.Price).ToHtmlString();}
+                @Html.ActionLink(htmlName, "Index", new { sortOrder = ViewBag.PriceSortParam })
+            </th>*@
+        <th>
+            @{string htmlName = @Html.DisplayNameFor(model => model.ArticleNumber).ToHtmlString();}
+            @Html.ActionLink(htmlName, "Index", new { sortOrder = ViewBag.ArticleNumberSortParam })
+        </th>
+        <th>
+            @{htmlName = @Html.DisplayNameFor(model => model.Quantity).ToHtmlString();}
+            @Html.ActionLink(htmlName, "Index", new { sortOrder = ViewBag.QuantitySortParam })
+        </th>
+        <th>
+            @{htmlName = @Html.DisplayNameFor(model => model.ShelfPosition).ToHtmlString();}
+            @Html.ActionLink(htmlName, "Index", new { sortOrder = ViewBag.LocationSortParam })
+        </th>
+        @*<th>
+                @{htmlName = @Html.DisplayNameFor(model => model.Description).ToHtmlString();}
+                @Html.ActionLink(htmlName, "Index", new { sortOrder = ViewBag.DescriptionSortParam })
+            </th>*@
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            @*<td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>*@
+            @*<td>
+                    @Html.DisplayFor(modelItem => item.Price)
+                </td>*@
+            <td>
+                @Html.DisplayFor(modelItem => item.ArticleNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Quantity)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ShelfPosition)
+            </td>
+            @*<td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>*@
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.ArticleNumber }) |
+                @Html.ActionLink("Details", "Details", new { id = item.ArticleNumber }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.ArticleNumber })
+            </td>
+        </tr>
+    }
+</table>
