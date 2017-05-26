@@ -9,8 +9,9 @@ using System.Web.Mvc;
 using MVCWarehousingSystem.Models;
 using MVCWarehousingSystem.Repositories;
 using MVCWarehousingSystem.ViewModels.StockItems;
-using MVCWarehousingSystem.Controllers.Handlers;
 using System.Globalization;
+using System.Web.Routing;
+using System.IO;
 
 namespace MVCWarehousingSystem.Controllers
 {
@@ -104,6 +105,8 @@ namespace MVCWarehousingSystem.Controllers
             return View(stockItem);
         }
 
+        #region Single and multiple articles creation
+
         // GET: StockItems/Create
         public ActionResult Create()
         {
@@ -129,7 +132,8 @@ namespace MVCWarehousingSystem.Controllers
         // GET: StockItems/CreateMultiple
         public ActionResult CreateMultiple()
         {
-            CreateMultipleHandler.Initiate();
+            StaticItemList.Items = new List<StockItem>();
+            //CreateMultipleHandler.Initiate();
             return View();
         }
 
@@ -142,7 +146,7 @@ namespace MVCWarehousingSystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                CreateMultipleHandler.AddCreatedItem(stockItem);
+                StaticItemList.Items.Add(stockItem);
 
                 ModelState.Clear();
                 return View();
@@ -153,9 +157,14 @@ namespace MVCWarehousingSystem.Controllers
 
         public ActionResult ValidateCreateMultiple()
         {
-            sir.AddItems(CreateMultipleHandler.ItemsToBeAdded);
-            return View(CreateMultipleHandler.ItemsToBeAdded);
+            if (StaticItemList.Items.Count == 0)
+                return RedirectToAction("Index");
+
+            sir.AddItems(StaticItemList.Items);
+            return View(StaticItemList.Items);
         }
+
+        #endregion
 
         // GET: StockItems/Edit/5
         public ActionResult Edit(int? id)
@@ -187,6 +196,8 @@ namespace MVCWarehousingSystem.Controllers
             return View(stockItem);
         }
 
+        #region Single and multiple articles delation
+
         // GET: StockItems/Delete/5
         public ActionResult Delete(int? id)
         {
@@ -212,43 +223,50 @@ namespace MVCWarehousingSystem.Controllers
             return RedirectToAction("Index");
         }
 
+        [AcceptVerbs(HttpVerbs.Get)]
         public ActionResult DeleteMultiple()
         {
-            DeleteMultipleVM dmvm = new DeleteMultipleVM();
-
-            dmvm.Initiate(sir.Items);
-
-            return View(dmvm);
+            ModelState.Clear();
+            DeleteMultipleVM deleteVM = new DeleteMultipleVM();
+            deleteVM.Initilize(sir.Items);
+            return View(deleteVM);
         }
 
-        public ActionResult DeleteMultipleConfirmed(DeleteMultipleVM model)
+        [HttpPost]
+        public ActionResult DeleteMultiple(DeleteMultipleVM model)
         {
+            if (model.ItemsToBeDeleted == null)
+                return RedirectToAction("Index");
+
             List<StockItem> itemsToBeDeleted = new List<StockItem>();
 
-            foreach (StockItem item in model.ItemsToBeDeleted.Keys.ToList())
+            foreach (int articleNumber in model.ItemsToBeDeleted)
             {
-                if (model.ItemsToBeDeleted[item])
-                {
-                    itemsToBeDeleted.Add(item);
-                }
-                else
-                {
-                    model.ItemsToBeDeleted.Remove(item);
-                }
+                itemsToBeDeleted.Add(sir.ItemByArticleNumber(articleNumber));
             }
 
             sir.DeleteItems(itemsToBeDeleted);
-            return View(model);
+            StaticItemList.Items = itemsToBeDeleted;
+            return RedirectToAction("DeleteMultipleConfirmed");
         }
+
+        public ActionResult DeleteMultipleConfirmed()
+        {
+            return View(StaticItemList.Items);
+        }
+
+        #endregion
 
         public ActionResult Search(string searchedValue, string sortOrder)
         {
             try
             {
+                int id = 0;
+                double price = 0;
                 IEnumerable<StockItem> result = null;
                 eViewType viewType = eViewType.Undefined;
 
-                if (int.TryParse(searchedValue, out int id))
+                if (int.TryParse(searchedValue, out id))
                 {
                     viewType = eViewType.SearchByArticleNumber;
                     result = new List<StockItem> { sir.ItemByArticleNumber(id) };
@@ -257,8 +275,9 @@ namespace MVCWarehousingSystem.Controllers
                 {
                     string currency = CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol.ToLower();
 
-                    if (double.TryParse(searchedValue.ToLower().Replace(currency, string.Empty).Trim(),
-                                        out double price))
+                    if (double.TryParse(searchedValue.ToLower().Replace(currency,
+                                                                        string.Empty).Trim(),
+                                        out price))
                     {
                         viewType = eViewType.SearchByPrice;
                         result = sir.ItemsByPrice(price);
@@ -288,6 +307,84 @@ namespace MVCWarehousingSystem.Controllers
                 return View("NoArticleFound");
             }
         }
+
+        #region XLM files management
+
+        // This action renders the form
+        public ActionResult ImportArticles()
+        {
+            return View();
+        }
+
+        // This action handles the form POST and the upload
+        [HttpPost]
+        public ActionResult ImportArticles(ImportArticlesVM viewModel)
+        {
+            List<StockItem> importedArticles = new List<StockItem>();
+
+            // if file's content length is zero or no files submitted
+
+            if (Request.Files.Count != 1 || Request.Files[0].ContentLength == 0)
+            {
+                ModelState.AddModelError("uploadError", "File's length is zero, or no files found");
+                return View(viewModel);
+            }
+
+            // check the file size (max 4 Mb)
+
+            if (Request.Files[0].ContentLength > 1024 * 1024 * 4)
+            {
+                ModelState.AddModelError("uploadError", "File size can't exceed 4 MB");
+                return View(viewModel);
+            }
+
+            // check the file size (min 100 bytes)
+
+            if (Request.Files[0].ContentLength < 100)
+            {
+                ModelState.AddModelError("uploadError", "File size is too small");
+                return View(viewModel);
+            }
+
+            // check file extension
+
+            string extension = Path.GetExtension(Request.Files[0].FileName).ToLower();
+
+            if (extension != ".xml")
+            {
+                ModelState.AddModelError("uploadError", "You may only upload XML files (xml extension).");
+                return View(viewModel);
+            }
+
+            // extract only the filename
+            var fileName = Path.GetFileName(Request.Files[0].FileName);
+
+            // store the file inside ~/App_Data/uploads folder
+            var path = Path.Combine(Server.MapPath("~/App_Data/uploads"), fileName);
+
+            try
+            {
+                if (System.IO.File.Exists(path))
+                    System.IO.File.Delete(path);
+
+                Request.Files[0].SaveAs(path);
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("uploadError", "Can't save file to disk");
+            }
+
+            if (ModelState.IsValid)
+            {
+                // put your logic here
+
+                return View("ImportedArticles", new { viewModel = importedArticles });
+            }
+
+            return View(viewModel);
+        }
+
+        #endregion
 
         protected override void Dispose(bool disposing)
         {

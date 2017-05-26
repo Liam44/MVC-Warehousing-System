@@ -1,5 +1,4 @@
-﻿using MVCWarehousingSystem.Controllers.Handlers;
-using MVCWarehousingSystem.Models;
+﻿using MVCWarehousingSystem.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,18 +8,13 @@ namespace MVCWarehousingSystem.ViewModels.StockItems
 {
     public class DeleteMultipleVM
     {
-        public Dictionary<StockItem, bool> ItemsToBeDeleted
-        {
-            get
-            {
-                return DeleteMultipleHandler.ItemsToBeDeleted;
-            }
-            private set { }
-        }
+        public int[] ItemsToBeDeleted { get; set; }
+        public List<StockItem> Items { get; set; }
 
-        public void Initiate(IEnumerable<StockItem> items)
+        public void Initilize(List<StockItem> items)
         {
-            DeleteMultipleHandler.Initiate(items);
+            Items = items;
+            ItemsToBeDeleted = new int[] { };
         }
     }
 }

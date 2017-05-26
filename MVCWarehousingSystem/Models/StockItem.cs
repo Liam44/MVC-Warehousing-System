@@ -9,6 +9,7 @@ namespace MVCWarehousingSystem.Models
     public class StockItem
     {
         [Key]
+        [Display(Name = "ID")]
         public int ArticleNumber { get; set; }
 
         [Display(Name = "Article name")]
