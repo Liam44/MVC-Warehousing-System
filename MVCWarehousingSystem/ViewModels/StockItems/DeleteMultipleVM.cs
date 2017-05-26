@@ -15,10 +15,7 @@ namespace MVCWarehousingSystem.ViewModels.StockItems
             {
                 return DeleteMultipleHandler.ItemsToBeDeleted;
             }
-            set
-            {
-                DeleteMultipleHandler.ItemsToBeDeleted = value;
-            }
+            private set { }
         }
 
         public void Initiate(IEnumerable<StockItem> items)

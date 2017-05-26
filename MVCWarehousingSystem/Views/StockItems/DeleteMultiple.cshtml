@@ -54,5 +54,8 @@
 
 </table>
 
-@Html.ActionLink("Delete the selected articles", "DeleteMultipleConfirmed", new { model = Model }) |
-@Html.Partial("_BackToListPartial")
+@Html.ActionLink("Delete the selected articles",
+                 "DeleteMultipleConfirmed",
+                 new MVCWarehousingSystem.ViewModels.StockItems.DeleteMultipleVM()) |
+@Html.ActionLink("Back to List", "Index")
+

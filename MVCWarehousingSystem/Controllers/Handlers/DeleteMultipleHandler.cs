@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MVCWarehousingSystem.Controllers.Handlers
 {
-    internal class DeleteMultipleHandler
+    public class DeleteMultipleHandler
     {
         public static Dictionary<StockItem, bool> ItemsToBeDeleted { get; set; }
 
