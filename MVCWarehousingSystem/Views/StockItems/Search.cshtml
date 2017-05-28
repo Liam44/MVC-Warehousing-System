@@ -6,18 +6,18 @@
 
     switch (Model.ViewType)
     {
-        case MVCWarehousingSystem.ViewModels.StockItems.eViewType.SearchByName:
+        case MVCWarehousingSystem.ViewModels.StockItems.EViewType.SearchByName:
             searchType = "Name";
-            searchedValue = string.Format("contains '{0}'", searchedValue);
+            searchedValue = string.Format("contains \"{0}\"", searchedValue);
             break;
-        case MVCWarehousingSystem.ViewModels.StockItems.eViewType.SearchByPrice:
+        case MVCWarehousingSystem.ViewModels.StockItems.EViewType.SearchByPrice:
             searchType = "Price";
             break;
-        case MVCWarehousingSystem.ViewModels.StockItems.eViewType.SearchByArticleNumber:
+        case MVCWarehousingSystem.ViewModels.StockItems.EViewType.SearchByArticleNumber:
             searchType = "Article number";
             break;
     }
-    ViewBag.Title = "Articles by " + searchType + " (" + searchedValue + ")";
+    ViewBag.Title = "Articles by " + searchType + ": '" + searchedValue + "'";
 }
 
 <h2>@ViewBag.Title</h2>

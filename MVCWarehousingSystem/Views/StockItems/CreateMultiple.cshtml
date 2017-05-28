@@ -63,10 +63,16 @@
     </div>
 }
 
-<div>
-    @Html.ActionLink("Validate creation", "ValidateCreateMultiple") |
-    @Html.ActionLink("Back to List", "Index")
-</div>
+@using (Html.BeginForm("ValidateCreateMultiple", "StockItems"))
+{
+    <input name="submit-button"
+           type="submit"
+           style="font-weight:bold;margin:10px 0 10px 0;"
+           value="Validate creation"
+           class="btn btn-default" />
+}
+
+@Html.Partial("_BackToListPartial")
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")

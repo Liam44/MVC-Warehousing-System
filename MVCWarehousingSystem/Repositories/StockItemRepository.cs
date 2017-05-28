@@ -3,9 +3,7 @@ using MVCWarehousingSystem.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
-using System.Web;
 
 namespace MVCWarehousingSystem.Repositories
 {
@@ -43,7 +41,7 @@ namespace MVCWarehousingSystem.Repositories
         public void DeleteItems(List<StockItem> items)
         {
             foreach (StockItem item in items)
-                db.Items.Remove(item);
+                db.Items.Remove(ItemByArticleNumber(item.ArticleNumber));
 
             if (items.Count > 0)
                 SaveChanges();

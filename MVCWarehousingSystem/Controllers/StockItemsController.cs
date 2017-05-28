@@ -1,17 +1,15 @@
-﻿using System;
+﻿using MVCWarehousingSystem.Models;
+using MVCWarehousingSystem.Repositories;
+using MVCWarehousingSystem.ViewModels.StockItems;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
-using System.Web;
 using System.Web.Mvc;
-using MVCWarehousingSystem.Models;
-using MVCWarehousingSystem.Repositories;
-using MVCWarehousingSystem.ViewModels.StockItems;
-using System.Globalization;
-using System.Web.Routing;
-using System.IO;
 
 namespace MVCWarehousingSystem.Controllers
 {
@@ -90,6 +88,12 @@ namespace MVCWarehousingSystem.Controllers
             return View();
         }
 
+        public ActionResult BackToList()
+        {
+            StaticItemList.Items = new List<StockItem>();
+            return RedirectToAction("Index");
+        }
+
         // GET: StockItems/Details/5
         public ActionResult Details(int? id)
         {
@@ -129,39 +133,48 @@ namespace MVCWarehousingSystem.Controllers
             return View(stockItem);
         }
 
-        // GET: StockItems/CreateMultiple
+        [HttpGet]
         public ActionResult CreateMultiple()
         {
             StaticItemList.Items = new List<StockItem>();
-            //CreateMultipleHandler.Initiate();
             return View();
         }
 
-        // POST: StockItems/CreateMultiple
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult CreateMultiple([Bind(Include = "ArticleNumber,Name,Price,ShelfPosition,Quantity,Description")] StockItem stockItem)
         {
             if (ModelState.IsValid)
             {
+                // Stock the created article in a static list of articles
                 StaticItemList.Items.Add(stockItem);
 
+                // Loops on the view until the user clicks on 'Validate'
                 ModelState.Clear();
                 return View();
             }
 
+            // Something went wrong during the validation of the data:
+            // The article under creation is displayed again
             return View(stockItem);
         }
 
         public ActionResult ValidateCreateMultiple()
         {
+            // If the user didn't create any articles before clicking on 'Validate'
             if (StaticItemList.Items.Count == 0)
+                // Redirect to 'Index'
                 return RedirectToAction("Index");
 
+            // Mass creation of the articles
             sir.AddItems(StaticItemList.Items);
-            return View(StaticItemList.Items);
+
+            // Reinitiate the static list of items
+            List<StockItem> tmp = StaticItemList.Items.ToList();
+            StaticItemList.Items = new List<StockItem>();
+
+            // Displays the list of created articles
+            return View(tmp);
         }
 
         #endregion
@@ -198,6 +211,8 @@ namespace MVCWarehousingSystem.Controllers
 
         #region Single and multiple articles delation
 
+        #region Single article delation
+
         // GET: StockItems/Delete/5
         public ActionResult Delete(int? id)
         {
@@ -223,37 +238,72 @@ namespace MVCWarehousingSystem.Controllers
             return RedirectToAction("Index");
         }
 
-        [AcceptVerbs(HttpVerbs.Get)]
+        #endregion
+
+        #region Multiple articles delation
+
+        [HttpGet]
         public ActionResult DeleteMultiple()
         {
-            ModelState.Clear();
+            if (StaticItemList.Items == null)
+                StaticItemList.Items = new List<StockItem>();
+
+            // Recreation of the model
             DeleteMultipleVM deleteVM = new DeleteMultipleVM();
             deleteVM.Initilize(sir.Items);
+
+            deleteVM.ItemsToBeDeleted = (StaticItemList.Items.Select(i => i.ArticleNumber)).ToArray();
+
+            // Displays the list of articles
             return View(deleteVM);
         }
 
-        [HttpPost]
-        public ActionResult DeleteMultiple(DeleteMultipleVM model)
+        [HttpGet]
+        public ActionResult DeleteMultipleConfirm()
         {
+            // This happens if the page is directly accessed via the URL
+            // Redirection to 'Index', instead of generating an error
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public ActionResult DeleteMultipleConfirm(DeleteMultipleVM model)
+        {
+            // The user clicked on the button without having selected any articles
             if (model.ItemsToBeDeleted == null)
                 return RedirectToAction("Index");
 
-            List<StockItem> itemsToBeDeleted = new List<StockItem>();
+            // Reconstruction of the model
+            DeleteMultipleVM deleteVM = new DeleteMultipleVM();
+            deleteVM.Initilize(sir.Items);
+
+            if (model.ItemsToBeDeleted != null)
+                deleteVM.ItemsToBeDeleted = model.ItemsToBeDeleted;
+
+            // Reconstruction of the list of articles needed to be deleted
+            StaticItemList.Items = new List<StockItem>();
 
             foreach (int articleNumber in model.ItemsToBeDeleted)
-            {
-                itemsToBeDeleted.Add(sir.ItemByArticleNumber(articleNumber));
-            }
+                StaticItemList.Items.Add(sir.ItemByArticleNumber(articleNumber));
 
-            sir.DeleteItems(itemsToBeDeleted);
-            StaticItemList.Items = itemsToBeDeleted;
-            return RedirectToAction("DeleteMultipleConfirmed");
+            // Displays the confirmation of delation
+            return View(deleteVM);
         }
 
         public ActionResult DeleteMultipleConfirmed()
         {
-            return View(StaticItemList.Items);
+            // Physically delete the selected articles
+            sir.DeleteItems(StaticItemList.Items);
+
+            // Reinitiate the static list of items
+            List<StockItem> tmp = StaticItemList.Items.ToList();
+            StaticItemList.Items = new List<StockItem>();
+
+            // Displays the list of created articles
+            return View(tmp);
         }
+
+        #endregion
 
         #endregion
 
@@ -261,14 +311,13 @@ namespace MVCWarehousingSystem.Controllers
         {
             try
             {
-                int id = 0;
                 double price = 0;
                 IEnumerable<StockItem> result = null;
-                eViewType viewType = eViewType.Undefined;
+                EViewType viewType = EViewType.Undefined;
 
-                if (int.TryParse(searchedValue, out id))
+                if (int.TryParse(searchedValue, out int id))
                 {
-                    viewType = eViewType.SearchByArticleNumber;
+                    viewType = EViewType.SearchByArticleNumber;
                     result = new List<StockItem> { sir.ItemByArticleNumber(id) };
                 }
                 else
@@ -279,13 +328,13 @@ namespace MVCWarehousingSystem.Controllers
                                                                         string.Empty).Trim(),
                                         out price))
                     {
-                        viewType = eViewType.SearchByPrice;
+                        viewType = EViewType.SearchByPrice;
                         result = sir.ItemsByPrice(price);
                         searchedValue = searchedValue.Trim();
                     }
                     else
                     {
-                        viewType = eViewType.SearchByName;
+                        viewType = EViewType.SearchByName;
                         result = sir.ItemsByName(searchedValue);
                     }
                 }

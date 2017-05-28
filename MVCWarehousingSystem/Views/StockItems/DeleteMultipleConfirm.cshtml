@@ -1,0 +1,71 @@
+﻿@model MVCWarehousingSystem.ViewModels.StockItems.DeleteMultipleVM
+
+@{
+    ViewBag.Title = "Confirmation to Multiple Articles delation";
+}
+
+<h2>Please confirm that you want to delete the following articles</h2>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Items.First().Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Items.First().Price)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Items.First().ShelfPosition)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Items.First().Quantity)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Items.First().Description)
+        </th>
+    </tr>
+
+    @foreach (var articleNumber in Model.ItemsToBeDeleted)
+    {
+        MVCWarehousingSystem.Models.StockItem item = Model.Items.Single(i => i.ArticleNumber == articleNumber);
+
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ShelfPosition)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Quantity)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+        </tr>
+    }
+
+</table>
+
+@using (Html.BeginForm("DeleteMultiple", "StockItems", FormMethod.Get))
+{
+    <input name="submit-button"
+           type="submit"
+           style="font-weight:bold;"
+           value="Change selected articles"
+           class="btn btn-default" />
+}
+
+@using (Html.BeginForm("DeleteMultipleConfirmed", "StockItems"))
+    {
+        <input name="submit-button"
+               type="submit"
+               style="font-weight:bold;margin:10px 0 10px 0;"
+               value="Confirm delation"
+               class="btn btn-default" />
+    }
+
+@Html.Partial("_BackToListPartial")

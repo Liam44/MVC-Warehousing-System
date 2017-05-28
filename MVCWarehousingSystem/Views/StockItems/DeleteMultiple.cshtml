@@ -6,7 +6,7 @@
 
 <h2>Delete Multiple Articles</h2>
 
-@using (Html.BeginForm())
+@using (Html.BeginForm("DeleteMultipleConfirm", "StockItems"))
 {
     @Html.AntiForgeryToken()
     @Html.ValidationSummary(true)
@@ -36,8 +36,22 @@
         {
             <tr>
                 <td>
-                    <input type="checkbox"
-                           name="ItemsToBeDeleted" value="@item.ArticleNumber" id="@item.ArticleNumber" />
+                    @{if (Model.ItemsToBeDeleted.Contains(item.ArticleNumber))
+                        {
+                            <input type="checkbox"
+                                   name="ItemsToBeDeleted"
+                                   value="@item.ArticleNumber"
+                                   id="@item.ArticleNumber"
+                                   checked="checked" />
+                        }
+                        else
+                        {
+                            <input type="checkbox"
+                                   name="ItemsToBeDeleted"
+                                   value="@item.ArticleNumber"
+                                   id="@item.ArticleNumber" />
+                        }
+                    }
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Name)
@@ -55,14 +69,18 @@
                     @Html.DisplayFor(modelItem => item.Description)
                 </td>
             </tr>
-        }
+                        }
 
     </table>
 
-    <p>
-        <input type="submit" value="Delete the selected articles" />
-    </p>
+    <div class="form-group">
+        <input type="submit"
+               value="Delete selected articles"
+               style="font-weight:bold;"
+               class="btn btn-default" />
+    </div>
+                        }
 
-    @Html.Partial("_BackToListPartial")
-}
+@Html.Partial("_BackToListPartial")
+
 

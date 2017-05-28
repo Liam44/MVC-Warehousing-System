@@ -175,7 +175,7 @@
     <Compile Include="Repositories\StockItemRepository.cs" />
     <Compile Include="ViewModels\StockItems\DeleteMultipleVM.cs" />
     <Compile Include="ViewModels\StockItems\ImportArticlesVM.cs" />
-    <Compile Include="ViewModels\StockItems\SearchItemVM.cs" />
+    <Compile Include="ViewModels\StockItems\SearchItemsVM.cs" />
     <Compile Include="ViewModels\StockItems\StaticItemList.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -236,6 +236,7 @@
     <Content Include="Views\StockItems\DeleteMultiple.cshtml" />
     <Content Include="Views\StockItems\DeleteMultipleConfirmed.cshtml" />
     <Content Include="Views\StockItems\ImportArticles.cshtml" />
+    <Content Include="Views\StockItems\DeleteMultipleConfirm.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201705230942037_Initial.resx">
