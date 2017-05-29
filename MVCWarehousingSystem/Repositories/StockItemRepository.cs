@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace MVCWarehousingSystem.Repositories
 {
@@ -69,6 +71,36 @@ namespace MVCWarehousingSystem.Repositories
         public IEnumerable<StockItem> ItemsByPrice(double? price)
         {
             return Items.Where(i => i.Price == price);
+        }
+
+        public List<StockItem> Deserialize(XElement elements)
+        {
+            List<StockItem> importedArticles = new List<StockItem>();
+
+            foreach (XElement element in elements.Elements())
+            {
+                try
+                {
+                    StockItem stockItem = new StockItem
+                    {
+                        Name = (string)element.Attribute("articlename"),
+                        Price = (double)element.Attribute("price"),
+                        ShelfPosition = (string)element.Attribute("shelfposition"),
+                        Quantity = (int)element.Attribute("quantity"),
+                        Description = (string)element.Attribute("description")
+                    };
+
+                    importedArticles.Add(stockItem);
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
+            }
+
+            AddItems(importedArticles);
+
+            return importedArticles;
         }
 
         public void SaveChanges()

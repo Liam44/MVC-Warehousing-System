@@ -1,37 +1,34 @@
-﻿@model IEnumerable<MVCWarehousingSystem.Models.StockItem>
+﻿@model MVCWarehousingSystem.ViewModels.StockItems.CreateMultipleVM
 
 @{
-    ViewBag.Title = "ValidateCreateMultiple";
+    ViewBag.Title = Model.Title;
 }
 
-<h2>The following articles have been created:</h2>
+<h2>The following articles have been @Model.ActionName:</h2>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.ArticleNumber)
+            @Html.DisplayNameFor(model => model.Items.First().ArticleNumber)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Name)
+            @Html.DisplayNameFor(model => model.Items.First().Name)
         </th>
    <th>
-            @Html.DisplayNameFor(model => model.Price)
+            @Html.DisplayNameFor(model => model.Items.First().Price)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.ShelfPosition)
+            @Html.DisplayNameFor(model => model.Items.First().ShelfPosition)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Quantity)
+            @Html.DisplayNameFor(model => model.Items.First().Quantity)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Description)
+            @Html.DisplayNameFor(model => model.Items.First().Description)
         </th>
     </tr>
 
-@foreach (var item in Model) {
+@foreach (var item in Model.Items) {
     <tr>
         <td>
             @Html.DisplayFor(modelItem => item.ArticleNumber)

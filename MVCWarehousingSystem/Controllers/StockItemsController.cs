@@ -10,6 +10,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web.Mvc;
+using System.Xml;
+using System.Xml.Linq;
+using System.Xml.Serialization;
 
 namespace MVCWarehousingSystem.Controllers
 {
@@ -174,7 +177,7 @@ namespace MVCWarehousingSystem.Controllers
             StaticItemList.Items = new List<StockItem>();
 
             // Displays the list of created articles
-            return View(tmp);
+            return View(new CreateMultipleVM { Title = "Multuple Articles created", ActionName = "created", Items = tmp });
         }
 
         #endregion
@@ -311,11 +314,12 @@ namespace MVCWarehousingSystem.Controllers
         {
             try
             {
+                int id = 0;
                 double price = 0;
                 IEnumerable<StockItem> result = null;
                 EViewType viewType = EViewType.Undefined;
 
-                if (int.TryParse(searchedValue, out int id))
+                if (int.TryParse(searchedValue, out id))
                 {
                     viewType = EViewType.SearchByArticleNumber;
                     result = new List<StockItem> { sir.ItemByArticleNumber(id) };
@@ -359,20 +363,32 @@ namespace MVCWarehousingSystem.Controllers
 
         #region XLM files management
 
+        [HttpGet]
+        public void Export()
+        {
+            Response.ClearContent();
+            Response.Buffer = true;
+            Response.AddHeader("content-disposition", "attachment;filename=ExportedArticles.xml");
+            Response.ContentType = "text/xml";
+
+            List<StockItem> data = sir.Items;
+
+            XmlSerializer serializer = new XmlSerializer(data.GetType());
+            serializer.Serialize(Response.OutputStream, data);
+        }
+
         // This action renders the form
-        public ActionResult ImportArticles()
+        [HttpGet]
+        public ActionResult Import()
         {
             return View();
         }
 
         // This action handles the form POST and the upload
         [HttpPost]
-        public ActionResult ImportArticles(ImportArticlesVM viewModel)
+        public ActionResult Import(ImportArticlesVM viewModel)
         {
-            List<StockItem> importedArticles = new List<StockItem>();
-
             // if file's content length is zero or no files submitted
-
             if (Request.Files.Count != 1 || Request.Files[0].ContentLength == 0)
             {
                 ModelState.AddModelError("uploadError", "File's length is zero, or no files found");
@@ -380,7 +396,6 @@ namespace MVCWarehousingSystem.Controllers
             }
 
             // check the file size (max 4 Mb)
-
             if (Request.Files[0].ContentLength > 1024 * 1024 * 4)
             {
                 ModelState.AddModelError("uploadError", "File size can't exceed 4 MB");
@@ -388,7 +403,6 @@ namespace MVCWarehousingSystem.Controllers
             }
 
             // check the file size (min 100 bytes)
-
             if (Request.Files[0].ContentLength < 100)
             {
                 ModelState.AddModelError("uploadError", "File size is too small");
@@ -396,7 +410,6 @@ namespace MVCWarehousingSystem.Controllers
             }
 
             // check file extension
-
             string extension = Path.GetExtension(Request.Files[0].FileName).ToLower();
 
             if (extension != ".xml")
@@ -405,29 +418,25 @@ namespace MVCWarehousingSystem.Controllers
                 return View(viewModel);
             }
 
-            // extract only the filename
-            var fileName = Path.GetFileName(Request.Files[0].FileName);
-
-            // store the file inside ~/App_Data/uploads folder
-            var path = Path.Combine(Server.MapPath("~/App_Data/uploads"), fileName);
-
-            try
-            {
-                if (System.IO.File.Exists(path))
-                    System.IO.File.Delete(path);
-
-                Request.Files[0].SaveAs(path);
-            }
-            catch (Exception)
-            {
-                ModelState.AddModelError("uploadError", "Can't save file to disk");
-            }
-
             if (ModelState.IsValid)
             {
-                // put your logic here
+                XElement elements = XElement.Load(Request.Files[0].InputStream);
 
-                return View("ImportedArticles", new { viewModel = importedArticles });
+                List<StockItem> importedArticles = sir.Deserialize(elements);
+
+                if (importedArticles == null)
+                {
+                    ModelState.AddModelError("uploadError", "Error in reading XML.");
+                    return View(viewModel);
+                }
+                else
+                    return View("ValidateCreateMultiple",
+                                new CreateMultipleVM
+                                {
+                                    Title = "Imported Articles",
+                                    ActionName = "imported",
+                                    Items = importedArticles
+                                });
             }
 
             return View(viewModel);
