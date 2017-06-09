@@ -1,9 +1,9 @@
 ﻿@model string
 
 @{
-    ViewBag.Title = "NoArticleFound";
+    ViewBag.Title = "No article found matching ' " + Model + " '";
 }
 
-<h2>No article found!</h2>
+<h2>@ViewBag.Title</h2>
 
 @Html.Partial("_BackToListPartial")

@@ -28,6 +28,7 @@ namespace MVCWarehousingSystem.Controllers
             ViewBag.LocationSortParam = sortOrder == "location_asc" ? "location_desc" : "location_asc";
             ViewBag.QuantitySortParam = sortOrder == "quantity_asc" ? "quantity_desc" : "quantity_asc";
             ViewBag.DescriptionSortParam = sortOrder == "description_asc" ? "description_desc" : "description_asc";
+
             switch (sortOrder)
             {
                 case "number_desc":
@@ -322,7 +323,12 @@ namespace MVCWarehousingSystem.Controllers
                 if (int.TryParse(searchedValue, out id))
                 {
                     viewType = EViewType.SearchByArticleNumber;
-                    result = new List<StockItem> { sir.ItemByArticleNumber(id) };
+                    StockItem item = sir.ItemByArticleNumber(id);
+
+                    if (item == null)
+                        result = new List<StockItem>();
+                    else
+                        result = new List<StockItem> { item };
                 }
                 else
                 {
@@ -339,12 +345,12 @@ namespace MVCWarehousingSystem.Controllers
                     else
                     {
                         viewType = EViewType.SearchByName;
-                        result = sir.ItemsByName(searchedValue);
+                        result = sir.ItemsByName(searchedValue.Replace("\"", string.Empty));
                     }
                 }
 
                 if (result.Count() == 0)
-                    return View("NoArticleFound");
+                    return View("NoArticleFound", "", searchedValue);
                 else
                 {
                     return View(new SearchItemsVM
